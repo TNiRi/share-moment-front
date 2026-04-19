@@ -1,9 +1,8 @@
 <template>
     <form action="">
-        <input type="email" v-model="user_data.email">
-        <input type="text" v-model="user_data.nickname">
+        <input type="nickname" v-model="user_data.nickname">
         <input type="password" v-model="user_data.password">
-        <button @click="doSignUp">sign up</button>
+        <button @click="doSignIn">sign in</button>
     </form>
 </template>
 
@@ -14,7 +13,6 @@ export default {
     data() {
     return {
         user_data: {
-            email: '',
             nickname: '',
             password: ''
         }
@@ -22,12 +20,15 @@ export default {
   },
   methods: {
     ...mapActions(useUserStore, {
-        signUp: 'signUp'
+        signIn: 'signIn'
     }),
-    async doSignUp(e) {
+    async doSignIn(e) {
         e.preventDefault();
         console.log(this.user_data);
-        await this.signUp(this.user_data);
+        const result = await this.signIn(this.user_data);
+        if (result) {
+            this.$router.push({ name: 'home'})
+        }
     }
   }
 }

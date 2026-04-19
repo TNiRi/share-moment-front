@@ -1,9 +1,9 @@
 <template>
-  <HelloWorld />
+  <HeaderComponent></HeaderComponent>
 </template>
 
 <script>
-import { defineComponent } from 'vue';
+import HeaderComponent from '@/components/HeaderComponent.vue';
 
 // Components
 import HelloWorld from '../components/HelloWorld.vue';
@@ -12,7 +12,7 @@ export default defineComponent({
   name: 'HomeView',
 
   components: {
-    HelloWorld,
-  },
-});
+    HeaderComponent
+  }
+}
 </script>
