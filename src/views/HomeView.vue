@@ -1,18 +1,19 @@
 <template>
-  <HelloWorld />
+  <MapComponent />
+  <RadarComponent />
 </template>
 
 <script>
-import { defineComponent } from 'vue';
-
-// Components
-import HelloWorld from '../components/HelloWorld.vue';
-
-export default defineComponent({
-  name: 'HomeView',
-
+import MapComponent from '@/components/MapComponent.vue';
+import RadarComponent from '@/components/RadarComponent.vue';
+export default {
+  name: 'MapView',
   components: {
-    HelloWorld,
-  },
-});
+    MapComponent,
+    RadarComponent
+  }
+};
 </script>
+
+<style scoped>
+</style>
