@@ -102,7 +102,7 @@
   <style scoped>
   .map-container {
     position: relative;
-    height: 100vh;
+    height: calc(100vh - 140px);
     width: 100%;
   }
   .map {

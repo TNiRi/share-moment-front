@@ -16,6 +16,16 @@ const routes = [
     name: 'signin',
     component: () => import('../views/SignInView.vue')
   },
+  {
+    path: '/markers/new',
+    name: 'createmarker',
+    component: () => import('../views/CreateMarkerView.vue')
+  },
+  {
+    path: '/markers',
+    name: 'markermenu',
+    component: () => import('../views/MarkerMenuView.vue')
+  }
 ]
 
 const router = createRouter({
