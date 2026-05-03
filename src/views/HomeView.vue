@@ -1,16 +1,16 @@
 <template>
   <MapComponent />
-  <RadarComponent />
+  <RadarMenuComponent />
 </template>
 
 <script>
 import MapComponent from '@/components/MapComponent.vue';
-import RadarComponent from '@/components/RadarComponent.vue';
+import RadarMenuComponent from '@/components/RadarMenuComponent.vue';
 export default {
   name: 'MapView',
   components: {
     MapComponent,
-    RadarComponent
+    RadarMenuComponent
   }
 };
 </script>

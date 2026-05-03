@@ -1,9 +1,17 @@
 <template>
-    <form action="">
-        <input type="nickname" v-model="user_data.nickname">
-        <input type="password" v-model="user_data.password">
-        <button @click="doSignIn">sign in</button>
-    </form>
+    <v-card
+        class="mx-auto pa-5 mt-10"
+        max-width="344"
+        title="User Sign In">
+        <v-form action="">
+            <v-text-field type="email" v-model="user_data.email" placeholder="email" variant="outlined" /> 
+            <v-text-field type="text" v-model="user_data.nickname" placeholder="nickname" variant="outlined" />
+            <v-text-field type="password" v-model="user_data.password" placeholder="password" variant="outlined" />
+            <div class="d-flex justify-end">
+                <v-btn @click="doSignIn" color="light-green-darken-3">sign in</v-btn>
+            </div>
+        </v-form>
+    </v-card>
 </template>
 
 <script>
