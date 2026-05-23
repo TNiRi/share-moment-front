@@ -6,6 +6,7 @@
         clearable
         label="title"
         id="label"
+        v-model="label"
         variant="outlined">
         </v-text-field>
 
@@ -20,24 +21,56 @@
 
         <v-textarea
         clearable
+        v-model="description"
         label="description"
         variant="outlined">
         </v-textarea>
 
-      <v-btn class="mt-2" type="submit" block>Submit</v-btn>
+      <v-btn class="mt-2" type="submit" block @click="do_create_marker">Create</v-btn>
     </v-form>
   </v-sheet>
 </template>
 <script>
+import { mapActions } from 'pinia';
+import { useMarkersStore } from '@/store/markersStore';
 export default {
     name: 'CreateMarkerView',
     data() {
         return {
             label: '',
             radius_m: 400,
+            latitude: 0,
+            longitude: 0,
             description: ''
         }
+    },
+    methods: {
+      ...mapActions(useMarkersStore, {
+        createMarker: 'createMarker'
+    }),
+    getUserCoords(){
+      navigator.geolocation.getCurrentPosition(position => {
+        this.latitude = position.coords.longitude;
+        this.longitude = position.coords.latitude;
+      })
+    },
+    async do_create_marker(e) {
+      e.preventDefault();
+      this.getUserCoords();
+      const marker_data = {
+        label: this.label,
+        radius_km: this.radius_m / 1000,
+        latitude: this.latitude,
+        longitude: this.longitude,
+        description: this.description
+      }
+      console.log(marker_data);
+      const result = await this.createMarker(marker_data);
+      if (result) {
+          this.$router.push({ name: 'home'})
+      }
     }
+  }
 }
 </script>
 
