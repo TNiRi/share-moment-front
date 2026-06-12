@@ -11,6 +11,12 @@
             </div>
         </v-form>
     </v-card>
+    <v-snackbar v-model="snackbar" :timeout="3000">
+      {{ snackbarText }}
+        <template v-slot:actions>
+            <v-btn color="red" variant="text" @click="snackbar = false">Close</v-btn>
+        </template>
+    </v-snackbar>
 </template>
 
 <script>
@@ -19,6 +25,8 @@ import { useUserStore } from '@/store/userStore';
 export default {
     data() {
     return {
+        snackbar: false,
+        snackbarText: "Неправильный логин или пароль!",
         user_data: {
             login: '',
             password: ''
@@ -44,10 +52,12 @@ export default {
                 password: this.user_data.password
             }
         }
-        console.log(this.user_data);
         const result = await this.signIn(signin_data);
         if (result) {
-            this.$router.push({ name: 'home'})
+            this.$router.push({ name: 'home'});
+        }
+        else{
+            this.snackbar = true;
         }
     }
   }
