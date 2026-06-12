@@ -33,6 +33,7 @@
 <script>
 import { mapActions } from 'pinia';
 import { useMarkersStore } from '@/store/markersStore';
+import getUserCoords from '@/utils/getUserCoords';
 export default {
     name: 'CreateMarkerView',
     data() {
@@ -48,15 +49,9 @@ export default {
       ...mapActions(useMarkersStore, {
         createMarker: 'createMarker'
     }),
-    getUserCoords(){
-      navigator.geolocation.getCurrentPosition(position => {
-        this.latitude = position.coords.longitude;
-        this.longitude = position.coords.latitude;
-      })
-    },
     async do_create_marker(e) {
       e.preventDefault();
-      this.getUserCoords();
+      await getUserCoords();
       const marker_data = {
         label: this.label,
         radius_km: this.radius_m / 1000,

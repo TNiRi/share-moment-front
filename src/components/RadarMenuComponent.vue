@@ -11,7 +11,9 @@
             width="100" 
             height="100" 
             elevation="10"
-            color="light-green-darken-3"></v-btn>
+            color="light-green-darken-3"
+            @click="search"
+            ></v-btn>
         <v-divider inset vertical></v-divider>
         <v-sheet class="radar-menu-side" height="75" width="50%">
             <router-link :to="{name : 'markermenu'}">Мои метки</router-link>
@@ -19,8 +21,22 @@
     </v-container>
 </template>
 <script>
+import { mapActions } from 'pinia';
+import { useMarkersStore } from '@/store/markersStore';
+import getUserCoords from '@/utils/getUserCoords';
 export default {
-
+    name: 'RadarMenuComponent',
+    methods: {
+        ...mapActions(useMarkersStore, {
+            setUserCoords: 'setUserCoords',
+            getNearMarkers: 'getNearMarkers'
+        }),
+        async search(){
+            const userCoords = await getUserCoords();
+            this.setUserCoords(userCoords.latitude, userCoords.longitude);
+            await this.getNearMarkers(userCoords.latitude, userCoords.longitude);
+        }
+    }
 }
 </script>
 <style scoped>

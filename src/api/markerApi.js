@@ -12,3 +12,26 @@ export const create_marker = async (token, marker_data) => {
     })
     return request.ok;
 }
+
+export const get_my_markers = async (token) => {
+    const request = await fetch(`${api_url}/markers/`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        }        
+    })
+    return await request.json();
+}
+
+export const get_near_markers = async (token, latitude, longitude) => {
+    const request = await fetch(`${api_url}/markers/near/`, {
+        method: 'POST',
+        body: JSON.stringify({latitude, longitude}),
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        }        
+    })
+    return await request.json();
+}
