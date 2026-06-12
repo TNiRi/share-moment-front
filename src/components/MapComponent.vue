@@ -16,17 +16,18 @@
     </v-container>
   </template>
   
-  <script>
-  import maplibregl from 'maplibre-gl';
-  import 'maplibre-gl/dist/maplibre-gl.css';
+<script>
+import maplibregl from 'maplibre-gl';
+import 'maplibre-gl/dist/maplibre-gl.css';
+import { mapState } from 'pinia';
+import { useMarkerStore } from '@/store/markersStore';
   
   export default {
     name: 'MapComponent',
     data() {
       return {
         map: null,
-        userLocation: null,
-        markers: []
+        userLocation: null
       };
     },
     mounted() {
@@ -36,6 +37,10 @@
       if (this.map) this.map.remove();
     },
     methods: {
+      ...mapState(useMarkerStore, {
+          userCoords: 'userCoords',
+          markers: 'markers'
+      }),
       initMap() {
         const apiKey = process.env.VUE_APP_MAPLIBRE_APIKEY;
         this.map = new maplibregl.Map({
@@ -67,6 +72,20 @@
         });
       },
       
+      showMarkers(){
+        this.markers.forEach(marker => {
+          new maplibregl.Marker({ color: '#FF5252' })
+            .setLngLat([marker.longitude, marker.latitude])
+            .setPopup(new maplibregl.Popup().setHTML(`
+              <div class="pa-2">
+                <h3>${marker.label}</h3>
+                <p>${marker.description}</p>
+              </div>
+            `))
+            .addTo(this.map);
+        });
+      },
+
       addCheckinMarker(lngLat, checkinData) {
         const marker = new maplibregl.Marker({ color: '#FF5252' })
           .setLngLat(lngLat)
@@ -94,6 +113,11 @@
           this.addCheckinMarker(this.userLocation, checkinData);
           this.$emit('checkin', checkinData);
         }
+      }
+    },
+    watch: {
+      markers() {
+        this.showMarkers();
       }
     }
   };
