@@ -4,8 +4,7 @@
         max-width="344"
         title="User Sign In">
         <v-form action="">
-            <v-text-field type="email" v-model="user_data.email" placeholder="email" variant="outlined" /> 
-            <v-text-field type="text" v-model="user_data.nickname" placeholder="nickname" variant="outlined" />
+            <v-text-field type="email" v-model="user_data.login" placeholder="email or nickname" variant="outlined" /> 
             <v-text-field type="password" v-model="user_data.password" placeholder="password" variant="outlined" />
             <div class="d-flex justify-end">
                 <v-btn @click="doSignIn" color="light-green-darken-3">sign in</v-btn>
@@ -21,7 +20,7 @@ export default {
     data() {
     return {
         user_data: {
-            nickname: '',
+            login: '',
             password: ''
         }
     }
@@ -32,8 +31,21 @@ export default {
     }),
     async doSignIn(e) {
         e.preventDefault();
+        let signin_data
+        if (this.user_data.login.includes('@')) {
+            signin_data = {
+                email: this.user_data.login,
+                password: this.user_data.password
+            }
+        }
+        else {
+            signin_data = {
+                nickname: this.user_data.login,
+                password: this.user_data.password
+            }
+        }
         console.log(this.user_data);
-        const result = await this.signIn(this.user_data);
+        const result = await this.signIn(signin_data);
         if (result) {
             this.$router.push({ name: 'home'})
         }
