@@ -42,6 +42,9 @@ export const useMarkersStore = defineStore('MarkersStore', {
             const result = await get_near_markers(token, latitude, longitude);
             console.log("Я получил эти метки: ", result);
             this.markers = result;
+        },
+        getMarkerById(id) {
+            return (this.own_markers)? this.own_markers.find(marker => marker.id === id): null
         }
     }
 })

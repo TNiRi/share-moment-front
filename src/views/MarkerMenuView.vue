@@ -4,7 +4,7 @@
         <v-container>
           <v-row v-for="marker in own_markers" :key="marker.id" density="comfortable">
             <v-col cols="12">
-              <v-card class="pb-5" color="green-darken-3">
+              <v-card @click="goToMarker(marker.id)" class="pb-5" color="green-darken-3">
                 <v-card-title class="text-headline-small">
                   {{ marker.label }}
                 </v-card-title>
@@ -25,7 +25,14 @@ export default {
     methods: {
       ...mapActions(useMarkersStore, {
         getMyMarkers: 'getMyMarkers'
-    })},
+    }),
+    goToMarker(id) {
+      this.$router.push({
+        name: 'markerdatamenu',
+        params: { id }
+      })
+    }
+  },
     async mounted() {
       await this.getMyMarkers();
       console.log("markers", this.own_markers)

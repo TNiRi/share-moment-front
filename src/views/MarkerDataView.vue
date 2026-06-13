@@ -5,6 +5,8 @@
     <h4 class="ml-6">Description</h4>
 </template>
 <script>
+// import { mapActions } from 'pinia';
+// import { useMarkersStore } from '@/store/markersStore';
 export default {
     name: 'MarkerDataView',
 }

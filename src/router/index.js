@@ -27,7 +27,7 @@ const routes = [
     component: () => import('../views/MarkerMenuView.vue')
   },
   {
-    path: '/markers/data',
+    path: '/markers/:id',
     name: 'markerdatamenu',
     component: () => import('../views/MarkerDataView.vue')
   }
