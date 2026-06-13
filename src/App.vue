@@ -1,6 +1,6 @@
 <template>
   <v-app theme="light">
-    <v-app-bar :elevation="2" color="light-green-darken-3">
+    <v-app-bar :elevation="2" color="green-darken-3">
       <v-app-bar-title>Share Moment</v-app-bar-title>
     </v-app-bar>
     <v-main>

@@ -11,9 +11,9 @@
             width="100" 
             height="100" 
             elevation="10"
-            color="light-green-darken-3"
+            color="green-darken-3"
             @click="search"
-            ></v-btn>
+            ></v-btn>   
         <v-divider inset vertical></v-divider>
         <v-sheet class="radar-menu-side" height="75" width="50%">
             <router-link :to="{name : 'markermenu'}">Мои метки</router-link>

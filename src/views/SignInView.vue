@@ -7,7 +7,7 @@
             <v-text-field type="email" v-model="user_data.login" placeholder="email or nickname" variant="outlined" /> 
             <v-text-field type="password" v-model="user_data.password" placeholder="password" variant="outlined" />
             <div class="d-flex justify-end">
-                <v-btn @click="doSignIn" color="light-green-darken-3">sign in</v-btn>
+                <v-btn @click="doSignIn" color="green-darken-3">sign in</v-btn>
             </div>
         </v-form>
     </v-card>

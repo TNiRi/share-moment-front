@@ -4,7 +4,7 @@ import { sign_up, sign_in, me } from '@/api/userApi'
 export const useUserStore = defineStore('userStore', {
     state() {
         return {
-            token: null,
+            token: localStorage.getItem('token'),
             user_data: null
         }
     },
@@ -16,6 +16,7 @@ export const useUserStore = defineStore('userStore', {
             const token = await sign_in(user_data)
             if (token) {
                 this.token = token;
+                localStorage.setItem('token', token);
                 this.user_data = await me(token);
                 return true;
             }
