@@ -21,9 +21,14 @@ import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { mapState } from 'pinia';
 import { useMarkerStore } from '@/store/markersStore';
-  
-  export default {
+export default {
     name: 'MapComponent',
+    props: {
+        markers: {
+            type: Array,
+            default: () => []
+        }
+    },
     data() {
       return {
         map: null,
@@ -66,13 +71,12 @@ import { useMarkerStore } from '@/store/markersStore';
           this.map.flyTo({ center: this.userLocation, zoom: 15 });
           
           // Маркер пользователя
-          new maplibregl.Marker({ color: '#1976D2' })
-            .setLngLat(this.userLocation)
-            .addTo(this.map);
+          this.handleCheckin();
         });
       },
       
       showMarkers(){
+        console.log('Updating markers on map:', this.markers);
         this.markers.forEach(marker => {
           new maplibregl.Marker({ color: '#FF5252' })
             .setLngLat([marker.longitude, marker.latitude])
@@ -80,45 +84,35 @@ import { useMarkerStore } from '@/store/markersStore';
               <div class="pa-2">
                 <h3>${marker.label}</h3>
                 <p>${marker.description}</p>
+                <p>${marker.longitude} ${marker.latitude}</p>
               </div>
             `))
             .addTo(this.map);
+            console.log(`Added marker: ${marker.label} at [${marker.longitude}, ${marker.latitude}]`);
         });
       },
 
-      addCheckinMarker(lngLat, checkinData) {
-        const marker = new maplibregl.Marker({ color: '#FF5252' })
+      addCheckinMarker(lngLat) {
+        new maplibregl.Marker({ color: '#52FF52' })
           .setLngLat(lngLat)
-          .setPopup(new maplibregl.Popup().setHTML(`
-            <div class="pa-2">
-              <h3>${checkinData.placeName}</h3>
-              <p>${new Date(checkinData.time).toLocaleString()}</p>
-              <v-btn small color="primary">View details</v-btn>
-            </div>
-          `))
           .addTo(this.map);
-        
-        this.markers.push(marker);
       },
       
       handleCheckin() {
         // Сохраняем текущую позицию
         if (this.userLocation) {
-          const checkinData = {
-            placeName: 'Current location',
-            time: Date.now(),
-            coordinates: this.userLocation
-          };
-          
-          this.addCheckinMarker(this.userLocation, checkinData);
-          this.$emit('checkin', checkinData);
+          this.addCheckinMarker(this.userLocation);
+          // this.$emit('checkin', checkinData);
         }
       }
     },
     watch: {
-      markers() {
-        this.showMarkers();
-      }
+        markers: {
+            handler() {
+                this.showMarkers();
+            },
+            deep: true
+        }
     }
   };
   </script>

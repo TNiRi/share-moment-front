@@ -1,63 +1,83 @@
 <template>
-    <v-container fluid id="radar-component" class="d-flex justify-center">
-        <v-sheet class="radar-menu-side" height="75" width="50%">
-            <router-link :to="{name : 'createmarker'}">Создать метку</router-link>
-        </v-sheet>
-        <v-btn 
-            id="radar-btn"
-            location="bottom center"
-            variant="elevated" 
-            icon="mdi-radar" 
-            width="100" 
-            height="100" 
+    <div class="bottom-nav">
+        <router-link
+            :to="{ name: 'createmarker' }"
+            class="nav-item"
+        >
+            <v-icon size="28">mdi-map-marker-plus</v-icon>
+            <span>Создать</span>
+        </router-link>
+
+        <v-btn
+            class="radar-btn"
+            icon
+            color="light-green-darken-3"
             elevation="10"
-            color="green-darken-3"
             @click="search"
-            ></v-btn>   
-        <v-divider inset vertical></v-divider>
-        <v-sheet class="radar-menu-side" height="75" width="50%">
-            <router-link :to="{name : 'markermenu'}">Мои метки</router-link>
-        </v-sheet>
-    </v-container>
+        >
+            <v-icon size="36">mdi-radar</v-icon>
+        </v-btn>
+
+        <router-link
+            :to="{ name: 'markermenu' }"
+            class="nav-item"
+        >
+            <v-icon size="28">mdi-map-marker-multiple</v-icon>
+            <span>Метки</span>
+        </router-link>
+    </div>
 </template>
 <script>
-import { mapActions } from 'pinia';
-import { useMarkersStore } from '@/store/markersStore';
-import getUserCoords from '@/utils/getUserCoords';
 export default {
     name: 'RadarMenuComponent',
     methods: {
-        ...mapActions(useMarkersStore, {
-            setUserCoords: 'setUserCoords',
-            getNearMarkers: 'getNearMarkers'
-        }),
-        async search(){
-            const userCoords = await getUserCoords();
-            this.setUserCoords(userCoords.latitude, userCoords.longitude);
-            await this.getNearMarkers(userCoords.latitude, userCoords.longitude);
+        search(){
+            this.$emit('search');
         }
     }
 }
 </script>
 <style scoped>
-#radar-component{
-    /* z-index: 11; */
+.bottom-nav {
     position: fixed;
     bottom: 0;
-    background-color: #127d17;
-    height: 75px;
-}
-.radar-menu-side{
-    background-color: #127d17;
+    left: 0;
+    width: 100%;
+    height: 80px;
+    background: white;
     display: flex;
-    justify-content: center;
+    justify-content: space-around;
     align-items: center;
-    color: black;
+    border-radius: 24px 24px 0 0;
+    box-shadow:0 -4px 20px rgba(0, 0, 0, 0.15);
+    z-index: 100;
 }
-#radar-btn{
-    z-index: 11;
-    position: fixed; 
-    bottom: 0;
-    height: 75px;
+
+.nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    color: #444;
+    font-size: 12px;
+    font-weight: 500;
+    gap: 4px;
+    transition: 0.2s;
+}
+
+.nav-item:active {
+    transform: scale(0.95);
+}
+
+.radar-btn {
+    position: absolute !important;
+    top: -30px;
+    width: 72px !important;
+    height: 72px !important;
+    border: 4px solid white;
+    box-shadow:
+        0 8px 20px rgba(18, 125, 23, 0.4) !important;
 }
 </style>

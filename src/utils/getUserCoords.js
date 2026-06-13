@@ -1,8 +1,8 @@
 export default function getUserCoords(){
     return new Promise((resolve, reject) => {
     navigator.geolocation.getCurrentPosition(position => {
-        const latitude = position.coords.longitude;
-        const longitude = position.coords.latitude;
+        const latitude = position.coords.latitude;
+        const longitude = position.coords.longitude;
         console.log("Я определил координаты: " + latitude + " " + longitude);
         resolve({ latitude, longitude });
     }, error => {
