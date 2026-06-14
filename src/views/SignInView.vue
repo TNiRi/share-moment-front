@@ -11,6 +11,12 @@
             </div>
         </v-form>
     </v-card>
+    <div class="text-center mt-6 text-grey-darken-2">
+        Ещё нет аккаунта? Зарегистрируйтесь 
+        <router-link to="/signup" class="text-grey-darken-4 font-weight-bold text-decoration-none">
+            здесь
+        </router-link>
+    </div>
     <v-snackbar v-model="snackbar" :timeout="3000">
       {{ snackbarText }}
         <template v-slot:actions>

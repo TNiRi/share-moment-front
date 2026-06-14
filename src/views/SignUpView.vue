@@ -12,6 +12,12 @@
             </div>
         </v-form>
     </v-card>
+    <div class="text-center mt-6 text-grey-darken-2">
+            Уже есть аккаунт? Войдите 
+            <router-link to="/signin" class="text-grey-darken-4 font-weight-bold text-decoration-none">
+                здесь
+            </router-link>
+        </div>
 </template>
 
 <script>
