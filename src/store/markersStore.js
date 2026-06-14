@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { useUserStore } from './userStore'
-import { create_marker, get_my_markers, get_near_markers } from '@/api/markerApi';
+import { create_marker, get_marker_by_id, get_my_markers, get_near_markers } from '@/api/markerApi';
 
 
 export const useMarkersStore = defineStore('MarkersStore', {
@@ -8,6 +8,7 @@ export const useMarkersStore = defineStore('MarkersStore', {
         return {
             own_markers: [],
             markers: [],
+            currentMarker: null,
             userCoords: null
         }
     },
@@ -43,8 +44,14 @@ export const useMarkersStore = defineStore('MarkersStore', {
             console.log("Я получил эти метки: ", result);
             this.markers = result;
         },
-        getMarkerById(id) {
-            return (this.own_markers)? this.own_markers.find(marker => marker.id === id): null
+        async getCurrentMarker(marker_id){
+            const user_store = useUserStore();
+            const token = user_store.token;
+            if (!token) {
+                return false;
+            }
+            const result = await get_marker_by_id(token, marker_id);
+            this.currentMarker = result;
         }
     }
 })
