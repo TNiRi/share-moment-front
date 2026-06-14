@@ -41,5 +41,5 @@ jobs:
 
             sed -i 's/^SPA_VERSION=.*/SPA_VERSION=${{ github.ref_name }}/' .env
 
-            docker compose pull
-            docker compose up -d
+            docker compose pull spa
+            docker compose up -d spa
