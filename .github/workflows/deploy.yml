@@ -24,11 +24,16 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_TOKEN }}
 
-      - uses: docker/build-push-action@v5
+      - name: Build and push frontend with env vars
+        uses: docker/build-push-action@v5
         with:
           context: .
           push: true
           tags: ghcr.io/tniri/share-moment-front:${{ github.ref_name }}
+          build-args: |
+            VUE_APP_MAPLIBRE_APIKEY=${{ secrets.VUE_APP_MAPLIBRE_APIKEY }}
+            VUE_APP_API_URL=${{ secrets.VUE_APP_API_URL }}
+            VUE_APP_MODE=production
 
       - name: Deploy
         uses: appleboy/ssh-action@v1.0.3
