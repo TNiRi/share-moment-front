@@ -1,0 +1,952 @@
+ИСХОДНЫЙ КОД ПРОЕКТА SHARE MOMENT
+============================================================
+
+
+────────────────────────────────────────────────────────────
+ФАЙЛ: .\src\utils\getUserCoords.js
+────────────────────────────────────────────────────────────
+
+export default function getUserCoords(){
+    return new Promise((resolve, reject) => {
+    navigator.geolocation.getCurrentPosition(position => {
+        const latitude = position.coords.latitude;
+        const longitude = position.coords.longitude;
+        console.log("Я определил координаты: " + latitude + " " + longitude);
+        resolve({ latitude, longitude });
+    }, error => {
+        console.error("Ошибка при получении координат:", error);
+        reject(error);
+    });
+    });
+}
+
+────────────────────────────────────────────────────────────
+ФАЙЛ: .\nginx.conf
+────────────────────────────────────────────────────────────
+
+server {
+    listen 80;
+    server_name share-moment.ru www.share-moment.ru;
+
+    root /usr/share/nginx/html;
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    location /api/ {
+        proxy_pass http://api:5000/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico|woff|woff2|ttf|eot|svg)$ {
+        expires 30d;
+        add_header Cache-Control "public, no-transform";
+        try_files $uri =404;
+    }
+}
+
+────────────────────────────────────────────────────────────
+ФАЙЛ: .\src\App.vue
+────────────────────────────────────────────────────────────
+
+<template>
+  <v-app theme="light">
+    <v-app-bar :elevation="2" color="green-darken-3">
+      <v-app-bar-title>Share Moment</v-app-bar-title>
+    </v-app-bar>
+    <v-main>
+      <router-view/>
+    </v-main>
+  </v-app>
+</template>
+
+<script>
+
+export default {
+  name: 'App',
+
+  data: () => ({
+    //
+  }),
+}
+</script>
+
+────────────────────────────────────────────────────────────
+ФАЙЛ: .\src\api\index.js
+────────────────────────────────────────────────────────────
+
+const local_api_url = 'http://127.0.0.1:5000';
+const deploy_api_url = process.env.VUE_APP_API_URL || local_api_url;
+
+// export const api_url = process.env.VUE_APP_MODE === "production" ? deploy_api_url : local_api_url;
+export const api_url = deploy_api_url;
+
+────────────────────────────────────────────────────────────
+ФАЙЛ: .\src\api\markerApi.js
+────────────────────────────────────────────────────────────
+
+import { api_url } from "./index"
+
+
+export const create_marker = async (token, marker_data) => {
+    const request = await fetch(`${api_url}/markers/`, {
+        method: 'POST',
+        body: JSON.stringify(marker_data),
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        }        
+    })
+    return request.ok;
+}
+
+export const get_my_markers = async (token) => {
+    const request = await fetch(`${api_url}/markers/`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        }        
+    })
+    return await request.json();
+}
+
+export const get_marker_by_id = async (token, marker_id) => {
+    const request = await fetch(`${api_url}/markers/${marker_id}/`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        }        
+    })
+    return await request.json();
+}
+
+export const get_near_markers = async (token, latitude, longitude) => {
+    const request = await fetch(`${api_url}/markers/near/`, {
+        method: 'POST',
+        body: JSON.stringify({latitude, longitude}),
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        }        
+    })
+    return await request.json();
+}
+
+────────────────────────────────────────────────────────────
+ФАЙЛ: .\src\api\userApi.js
+────────────────────────────────────────────────────────────
+
+import { api_url } from "./index"
+
+
+export const sign_up = async (user_data) => {
+    const request = await fetch(`${api_url}/users/signup/`, {
+        method: 'POST',
+        body: JSON.stringify(user_data),
+        headers: {
+            'Content-Type': 'application/json',
+        }        
+    })
+    return request.ok;
+}
+
+export const sign_in = async (user_data) => {
+    const request = await fetch(`${api_url}/users/signin/`, {
+        method: 'POST',
+        body: JSON.stringify(user_data),
+        headers: {
+            'Content-Type': 'application/json',
+        }        
+    })
+    const result = await request.json();
+    if (request.ok) {
+        return result.token;
+    }
+    return null;
+}
+
+export const me = async (token) => {
+    const request = await fetch(`${api_url}/users/me/`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        }        
+    })
+    const result = await request.json();
+    if (request.ok) {
+        return result;
+    }
+    return null;
+}
+
+────────────────────────────────────────────────────────────
+ФАЙЛ: .\src\components\HeaderComponent.vue
+────────────────────────────────────────────────────────────
+
+<template>
+    <v-app-bar :elevation="2" color="green-darken-3">
+      <v-app-bar-title>Share Moment</v-app-bar-title>
+      <template v-slot:append>
+          <p v-if="user_data">{{ user_data.nickname }}</p>
+        </template>
+    </v-app-bar>
+</template>
+<script>
+import { mapState } from 'pinia';
+import { useUserStore } from '@/store/userStore';
+export default {
+computed: {
+    ...mapState(useUserStore, {
+        user_data: 'user_data'
+    })
+}
+}
+</script>
+<style>
+</style>
+
+────────────────────────────────────────────────────────────
+ФАЙЛ: .\src\components\MapComponent.vue
+────────────────────────────────────────────────────────────
+
+<template>
+    <v-container fluid class="pa-0 map-container">
+      <div ref="mapContainer" class="map"></div>
+  
+      <v-btn
+        color="primary"
+        fab
+        absolute
+        bottom
+        right
+        class="ma-4 checkin-btn"
+        @click="handleCheckin"
+      >
+        <v-icon>m-map-marker</v-icon>
+      </v-btn>
+    </v-container>
+  </template>
+  
+<script>
+import maplibregl from 'maplibre-gl';
+import 'maplibre-gl/dist/maplibre-gl.css';
+import { mapState } from 'pinia';
+import { useMarkerStore } from '@/store/markersStore';
+export default {
+    name: 'MapComponent',
+    props: {
+        markers: {
+            type: Array,
+            default: () => []
+        }
+    },
+    data() {
+      return {
+        map: null,
+        userLocation: null
+      };
+    },
+    mounted() {
+      this.initMap();
+    },
+    beforeUnmount() {
+      if (this.map) this.map.remove();
+    },
+    methods: {
+      ...mapState(useMarkerStore, {
+          userCoords: 'userCoords',
+          markers: 'markers'
+      }),
+      initMap() {
+        const apiKey = process.env.VUE_APP_MAPLIBRE_APIKEY;
+        this.map = new maplibregl.Map({
+          container: this.$refs.mapContainer,
+          style: `https://api.maptiler.com/maps/bright/style.json?key=${apiKey}`,
+          center: [37.6173, 55.7558], // Москва, для примера
+          zoom: 15
+      });
+        // Добавляем геолокацию
+        this.map.addControl(new maplibregl.GeolocateControl({
+          positionOptions: { enableHighAccuracy: true },
+          trackUserLocation: true
+        }));
+        
+        this.map.on('load', () => {
+          this.getUserLocation();
+        });
+      },
+      
+      getUserLocation() {
+        navigator.geolocation.getCurrentPosition(position => {
+          this.userLocation = [position.coords.longitude, position.coords.latitude];
+          this.map.flyTo({ center: this.userLocation, zoom: 15 });
+          
+          // Маркер пользователя
+          this.handleCheckin();
+        });
+      },
+      
+      showMarkers(){
+        console.log('Updating markers on map:', this.markers);
+        this.markers.forEach(marker => {
+          new maplibregl.Marker({ color: '#FF5252' })
+            .setLngLat([marker.longitude, marker.latitude])
+            .setPopup(new maplibregl.Popup().setHTML(`
+              <div class="pa-2">
+                <h3>${marker.label}</h3>
+                <p>${marker.description}</p>
+                <p>${marker.longitude} ${marker.latitude}</p>
+              </div>
+            `))
+            .addTo(this.map);
+            console.log(`Added marker: ${marker.label} at [${marker.longitude}, ${marker.latitude}]`);
+        });
+      },
+
+      addCheckinMarker(lngLat) {
+        new maplibregl.Marker({ color: '#52FF52' })
+          .setLngLat(lngLat)
+          .addTo(this.map);
+      },
+      
+      handleCheckin() {
+        // Сохраняем текущую позицию
+        if (this.userLocation) {
+          this.addCheckinMarker(this.userLocation);
+          // this.$emit('checkin', checkinData);
+        }
+      }
+    },
+    watch: {
+        markers: {
+            handler() {
+                this.showMarkers();
+            },
+            deep: true
+        }
+    }
+  };
+  </script>
+  
+  <style scoped>
+  .map-container {
+    position: relative;
+    height: calc(100vh - 140px);
+    width: 100%;
+  }
+  .map {
+    height: 100%;
+    width: 100%;
+  }
+  .checkin-btn {
+    z-index: 10;
+  }
+  </style>
+
+────────────────────────────────────────────────────────────
+ФАЙЛ: .\src\components\RadarMenuComponent.vue
+────────────────────────────────────────────────────────────
+
+<template>
+    <div class="bottom-nav">
+        <router-link
+            :to="{ name: 'createmarker' }"
+            class="nav-item"
+        >
+            <v-icon size="28">mdi-map-marker-plus</v-icon>
+            <span>Создать</span>
+        </router-link>
+
+        <v-btn
+            class="radar-btn"
+            icon
+            color="light-green-darken-3"
+            elevation="10"
+            @click="search"
+        >
+            <v-icon size="36">mdi-radar</v-icon>
+        </v-btn>
+
+        <router-link
+            :to="{ name: 'markermenu' }"
+            class="nav-item"
+        >
+            <v-icon size="28">mdi-map-marker-multiple</v-icon>
+            <span>Метки</span>
+        </router-link>
+    </div>
+</template>
+<script>
+export default {
+    name: 'RadarMenuComponent',
+    methods: {
+        search(){
+            this.$emit('search');
+        }
+    }
+}
+</script>
+<style scoped>
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 80px;
+    background: white;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    border-radius: 24px 24px 0 0;
+    box-shadow:0 -4px 20px rgba(0, 0, 0, 0.15);
+    z-index: 100;
+}
+
+.nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    color: #444;
+    font-size: 12px;
+    font-weight: 500;
+    gap: 4px;
+    transition: 0.2s;
+}
+
+.nav-item:active {
+    transform: scale(0.95);
+}
+
+.radar-btn {
+    position: absolute !important;
+    top: -30px;
+    width: 72px !important;
+    height: 72px !important;
+    border: 4px solid white;
+    box-shadow:
+        0 8px 20px rgba(18, 125, 23, 0.4) !important;
+}
+</style>
+
+────────────────────────────────────────────────────────────
+ФАЙЛ: .\src\main.js
+────────────────────────────────────────────────────────────
+
+import { createApp } from 'vue'
+import App from './App.vue'
+import router from './router'
+import vuetify from './plugins/vuetify'
+import { loadFonts } from './plugins/webfontloader'
+import { createPinia } from 'pinia'
+
+loadFonts()
+
+createApp(App)
+  .use(router)
+  .use(createPinia())
+  .use(vuetify)
+  .mount('#app')
+
+────────────────────────────────────────────────────────────
+ФАЙЛ: .\src\plugins\vuetify.js
+────────────────────────────────────────────────────────────
+
+// Styles
+import '@mdi/font/css/materialdesignicons.css'
+import 'vuetify/styles'
+
+// Vuetify
+import { createVuetify } from 'vuetify'
+
+export default createVuetify(
+  // https://vuetifyjs.com/en/introduction/why-vuetify/#feature-guides
+)
+
+────────────────────────────────────────────────────────────
+ФАЙЛ: .\src\router\index.js
+────────────────────────────────────────────────────────────
+
+import { createRouter, createWebHashHistory } from 'vue-router'
+
+const routes = [
+  {
+    path: '/',
+    name: 'home',
+    component: () => import('../views/HomeView.vue')
+  },
+  {
+    path: '/signup',
+    name: 'signup',
+    component: () => import('../views/SignUpView.vue')
+  },
+  {
+    path: '/signin',
+    name: 'signin',
+    component: () => import('../views/SignInView.vue')
+  },
+  {
+    path: '/markers/new',
+    name: 'createmarker',
+    component: () => import('../views/CreateMarkerView.vue')
+  },
+  {
+    path: '/markers',
+    name: 'markermenu',
+    component: () => import('../views/MarkerMenuView.vue')
+  },
+  {
+    path: '/markers/:id',
+    name: 'markerdatamenu',
+    component: () => import('../views/MarkerDataView.vue')
+  }
+]
+
+const router = createRouter({
+  history: createWebHashHistory(),
+  routes
+})
+
+export default router
+
+────────────────────────────────────────────────────────────
+ФАЙЛ: .\src\store\markersStore.js
+────────────────────────────────────────────────────────────
+
+import { defineStore } from 'pinia'
+import { useUserStore } from './userStore'
+import { create_marker, get_marker_by_id, get_my_markers, get_near_markers } from '@/api/markerApi';
+
+
+export const useMarkersStore = defineStore('MarkersStore', {
+    state() {
+        return {
+            own_markers: [],
+            markers: [],
+            currentMarker: null,
+            userCoords: null
+        }
+    },
+    actions: {
+        setUserCoords(latitude, longitude) {
+            this.userCoords = {latitude, longitude};
+        },
+        async createMarker(marker_data) {
+            const user_store = useUserStore();
+            const token = user_store.token;
+            if (!token) {
+                return false;
+            }
+            const result = await create_marker(token, marker_data);
+            return result;
+        },
+        async getMyMarkers(){
+            const user_store = useUserStore();
+            const token = user_store.token;
+            if (!token) {
+                return false;
+            }
+            const result = await get_my_markers(token);
+            this.own_markers = result;
+        },
+        async getNearMarkers(latitude, longitude) {
+            const user_store = useUserStore();
+            const token = user_store.token;
+            if (!token) {
+                return false;
+            }
+            const result = await get_near_markers(token, latitude, longitude);
+            console.log("Я получил эти метки: ", result);
+            this.markers = result;
+        },
+        async getCurrentMarker(marker_id){
+            const user_store = useUserStore();
+            const token = user_store.token;
+            if (!token) {
+                return false;
+            }
+            const result = await get_marker_by_id(token, marker_id);
+            this.currentMarker = result;
+        }
+    }
+})
+
+────────────────────────────────────────────────────────────
+ФАЙЛ: .\src\store\userStore.js
+────────────────────────────────────────────────────────────
+
+import { defineStore } from 'pinia'
+import { sign_up, sign_in, me } from '@/api/userApi'
+
+export const useUserStore = defineStore('userStore', {
+    state() {
+        return {
+            token: localStorage.getItem('token'),
+            user_data: null
+        }
+    },
+    actions: {
+        async signUp(user_data) {
+            await sign_up(user_data);
+        },
+        async signIn(user_data) {
+            const token = await sign_in(user_data)
+            if (token) {
+                this.token = token;
+                localStorage.setItem('token', token);
+                this.user_data = await me(token);
+                return true;
+            }
+            return false;
+        }
+    }
+})
+
+
+────────────────────────────────────────────────────────────
+ФАЙЛ: .\src\views\CreateMarkerView.vue
+────────────────────────────────────────────────────────────
+
+<template>
+  <v-sheet class="mx-auto" width="300">
+    <v-form @submit.prevent>
+        <h1>creating marker</h1>
+        <v-text-field
+        clearable
+        label="title"
+        id="label"
+        v-model="label"
+        variant="outlined">
+        </v-text-field>
+
+        <label for="radius_m">radius (m)</label>
+        <v-slider id="radius_m"
+            v-model="radius_m"
+            :max="3000"
+            :min="200"
+            :step="200"
+            thumb-label
+        ></v-slider>
+
+        <v-textarea
+        clearable
+        v-model="description"
+        label="description"
+        variant="outlined">
+        </v-textarea>
+
+      <v-btn class="mt-2" type="submit" block @click="do_create_marker">Create</v-btn>
+    </v-form>
+  </v-sheet>
+</template>
+<script>
+import { mapActions } from 'pinia';
+import { useMarkersStore } from '@/store/markersStore';
+import getUserCoords from '@/utils/getUserCoords';
+export default {
+    name: 'CreateMarkerView',
+    data() {
+        return {
+            label: '',
+            radius_m: 400,
+            latitude: 0,
+            longitude: 0,
+            description: ''
+        }
+    },
+    methods: {
+      ...mapActions(useMarkersStore, {
+        createMarker: 'createMarker'
+    }),
+    async do_create_marker(e) {
+      e.preventDefault();
+      await getUserCoords();
+      const marker_data = {
+        label: this.label,
+        radius_km: this.radius_m / 1000,
+        latitude: this.latitude,
+        longitude: this.longitude,
+        description: this.description
+      }
+      console.log(marker_data);
+      const result = await this.createMarker(marker_data);
+      if (result) {
+          this.$router.push({ name: 'home'})
+      }
+    }
+  }
+}
+</script>
+
+<style scoped>
+h1{
+    text-align: center;
+    padding: 20px 0;
+}
+</style>
+
+────────────────────────────────────────────────────────────
+ФАЙЛ: .\src\views\HomeView.vue
+────────────────────────────────────────────────────────────
+
+<template>
+  <MapComponent :markers="markers" />
+  <RadarMenuComponent @search="handleSearch" />
+</template>
+
+<script>
+import { mapActions, mapState } from 'pinia';
+import { useMarkersStore } from '@/store/markersStore';
+import getUserCoords from '@/utils/getUserCoords';
+import MapComponent from '@/components/MapComponent.vue';
+import RadarMenuComponent from '@/components/RadarMenuComponent.vue';
+export default {
+  name: 'MapView',
+  components: {
+    MapComponent,
+    RadarMenuComponent
+  },
+  computed: {
+    ...mapState(useMarkersStore, {
+        markers: 'markers'
+    })
+  },
+  methods: {
+    ...mapActions(useMarkersStore, {
+        setUserCoords: 'setUserCoords',
+        getNearMarkers: 'getNearMarkers'
+    }),
+    async handleSearch(){
+      const userCoords = await getUserCoords();
+      this.setUserCoords(userCoords.latitude, userCoords.longitude);
+      await this.getNearMarkers(userCoords.latitude, userCoords.longitude);
+    }
+  }
+};
+</script>
+
+<style scoped>
+
+</style>
+
+────────────────────────────────────────────────────────────
+ФАЙЛ: .\src\views\MarkerDataView.vue
+────────────────────────────────────────────────────────────
+
+<template>
+    <h1 style="text-align: center;" class="text-green-darken-4">{{ currentMarker?.label }}</h1>
+    <!-- фото (если есть) -->
+    <h3 class="text-green-darken-4 ml-6">Description</h3>
+    <h4 class="ml-6">{{ currentMarker?.description }}</h4>
+    <!-- + удаление -->
+</template>
+<script>
+import { useMarkersStore } from '@/store/markersStore';
+import { mapActions, mapState } from 'pinia';
+export default {
+    name: 'MarkerDataMenuView',
+    methods: {
+        ...mapActions(useMarkersStore, {
+            getCurrentMarker: 'getCurrentMarker'
+        })
+    },
+    computed: {
+        ...mapState(useMarkersStore, {
+            currentMarker: 'currentMarker'
+        }),
+        markerId() {
+            return this.$route.params.id;
+        }
+    },
+    async mounted() {
+        await this.getCurrentMarker(this.markerId)
+    }
+}
+</script>
+
+────────────────────────────────────────────────────────────
+ФАЙЛ: .\src\views\MarkerMenuView.vue
+────────────────────────────────────────────────────────────
+
+<template>
+    <h1 style="text-align: center;" class="text-green-darken-4">Marker Menu</h1>
+      <v-main>
+        <v-container>
+          <v-row v-for="marker in own_markers" :key="marker.id" density="comfortable">
+            <v-col cols="12">
+              <v-card @click="goToMarker(marker.id)" class="pb-5" color="green-darken-3">
+                <v-card-title class="text-headline-small">
+                  {{ marker.label }}
+                </v-card-title>
+                <v-card-subtitle>
+                  {{ marker.description }}
+                </v-card-subtitle>
+              </v-card>
+            </v-col>
+          </v-row>
+        </v-container>
+      </v-main>
+</template>
+<script>
+import { useMarkersStore } from '@/store/markersStore';
+import { mapActions, mapState } from 'pinia';
+export default {
+    name: 'MarkerMenuView',
+    methods: {
+      ...mapActions(useMarkersStore, {
+        getMyMarkers: 'getMyMarkers'
+    }),
+    goToMarker(id) {
+      this.$router.push({
+        name: 'markerdatamenu',
+        params: { id }
+      })
+    }
+  },
+    async mounted() {
+      await this.getMyMarkers();
+      console.log("markers", this.own_markers)
+    },
+    computed: {
+      ...mapState(useMarkersStore, {
+        own_markers: 'own_markers'
+      })
+    }
+}
+</script>
+
+────────────────────────────────────────────────────────────
+ФАЙЛ: .\src\views\SignInView.vue
+────────────────────────────────────────────────────────────
+
+<template>
+    <v-card
+        class="mx-auto pa-5 mt-10"
+        max-width="344"
+        title="User Sign In">
+        <v-form action="">
+            <v-text-field type="email" v-model="user_data.login" placeholder="email or nickname" variant="outlined" /> 
+            <v-text-field type="password" v-model="user_data.password" placeholder="password" variant="outlined" />
+            <div class="d-flex justify-end">
+                <v-btn @click="doSignIn" color="green-darken-3">sign in</v-btn>
+            </div>
+        </v-form>
+    </v-card>
+    <div class="text-center mt-6 text-grey-darken-2">
+        Ещё нет аккаунта? Зарегистрируйтесь 
+        <router-link to="/signup" class="text-grey-darken-4 font-weight-bold text-decoration-none">
+            здесь
+        </router-link>
+    </div>
+    <v-snackbar v-model="snackbar" :timeout="3000">
+      {{ snackbarText }}
+        <template v-slot:actions>
+            <v-btn color="red" variant="text" @click="snackbar = false">Close</v-btn>
+        </template>
+    </v-snackbar>
+</template>
+
+<script>
+import { mapActions } from 'pinia';
+import { useUserStore } from '@/store/userStore';
+export default {
+    data() {
+    return {
+        snackbar: false,
+        snackbarText: "Неправильный логин или пароль!",
+        user_data: {
+            login: '',
+            password: ''
+        }
+    }
+  },
+  methods: {
+    ...mapActions(useUserStore, {
+        signIn: 'signIn'
+    }),
+    async doSignIn(e) {
+        e.preventDefault();
+        let signin_data
+        if (this.user_data.login.includes('@')) {
+            signin_data = {
+                email: this.user_data.login,
+                password: this.user_data.password
+            }
+        }
+        else {
+            signin_data = {
+                nickname: this.user_data.login,
+                password: this.user_data.password
+            }
+        }
+        const result = await this.signIn(signin_data);
+        if (result) {
+            this.$router.push({ name: 'home'});
+        }
+        else{
+            this.snackbar = true;
+        }
+    }
+  }
+}
+</script>
+
+────────────────────────────────────────────────────────────
+ФАЙЛ: .\src\views\SignUpView.vue
+────────────────────────────────────────────────────────────
+
+<template>
+    <v-card
+        class="mx-auto pa-5 mt-10"
+        max-width="344"
+        title="User Registration">
+        <v-form action="">
+            <v-text-field type="email" v-model="user_data.email" placeholder="email" variant="outlined" />
+            <v-text-field type="text" v-model="user_data.nickname" placeholder="nickname" variant="outlined" />
+            <v-text-field type="password" v-model="user_data.password" placeholder="password" variant="outlined" />
+            <div class="d-flex justify-end">
+                <v-btn @click="doSignUp" color="green-darken-3">sign up</v-btn>
+            </div>
+        </v-form>
+    </v-card>
+    <div class="text-center mt-6 text-grey-darken-2">
+            Уже есть аккаунт? Войдите 
+            <router-link to="/signin" class="text-grey-darken-4 font-weight-bold text-decoration-none">
+                здесь
+            </router-link>
+        </div>
+</template>
+
+<script>
+import { mapActions } from 'pinia';
+import { useUserStore } from '@/store/userStore';
+export default {
+    data() {
+    return {
+        user_data: {
+            email: '',
+            nickname: '',
+            password: ''
+        }
+    }
+  },
+  methods: {
+    ...mapActions(useUserStore, {
+        signUp: 'signUp'
+    }),
+    async doSignUp(e) {
+        e.preventDefault();
+        console.log(this.user_data);
+        await this.signUp(this.user_data);
+    }
+  }
+}
+</script>

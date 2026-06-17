@@ -3,7 +3,7 @@
     <!-- фото (если есть) -->
     <h3 class="text-green-darken-4 ml-6">Description</h3>
     <h4 class="ml-6">{{ currentMarker?.description }}</h4>
-    <!-- + изменение настроек приватности и удаление -->
+    <!-- + удаление -->
 </template>
 <script>
 import { useMarkersStore } from '@/store/markersStore';
