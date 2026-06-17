@@ -7,6 +7,7 @@ export default function getUserCoords(){
         resolve({ latitude, longitude });
     }, error => {
         console.error("Ошибка при получении координат:", error);
+        resolve({ latitude: 37.6173, longitude: 55.7558 }); // Возвращаем дефолтные координаты, если координаты не получены
         reject(error);
     });
     });
