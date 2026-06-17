@@ -1,6 +1,8 @@
 <template>
     <v-app-bar :elevation="2" color="green-darken-3">
-      <v-app-bar-title>Share Moment</v-app-bar-title>
+      <router-link to="{name : 'home'}">
+        <v-app-bar-title>Share Moment</v-app-bar-title>
+      </router-link>
       <template v-slot:append>
           <p v-if="user_data">{{ user_data.nickname }}</p>
         </template>
@@ -16,7 +18,7 @@ export default {
         })
     },
     mounted() {
-        if(this.user_data === null){
+        if(!this.user_data){
             this.$router.push({
                 name: 'signin'
             })

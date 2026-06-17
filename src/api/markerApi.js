@@ -45,3 +45,13 @@ export const get_near_markers = async (token, latitude, longitude) => {
     })
     return await request.json();
 }
+
+export const get_image_by_path = async (token, path) => {
+    const request = await fetch(`${api_url}/markers/image/?path=${path}`, {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }        
+    })
+    return await request.blob();
+}
