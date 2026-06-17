@@ -26,6 +26,19 @@
         variant="outlined">
         </v-textarea>
 
+        <!-- Поле для загрузки файлов -->
+        <v-file-input
+          v-model="files"
+          label="Upload files"
+          multiple
+          clearable
+          variant="outlined"
+          prepend-icon="mdi-paperclip"
+          accept="image/*,.pdf,.doc,.docx,.txt"
+          show-size
+          counter
+        ></v-file-input>
+
       <v-btn class="mt-2" type="submit" block @click="do_create_marker">Create</v-btn>
     </v-form>
   </v-sheet>
@@ -42,7 +55,8 @@ export default {
             radius_m: 400,
             latitude: 0,
             longitude: 0,
-            description: ''
+            description: '',
+            files: [] // Массив для хранения загруженных файлов
         }
     },
     methods: {
@@ -52,13 +66,17 @@ export default {
     async do_create_marker(e) {
       e.preventDefault();
       await getUserCoords();
+      
+      // Подготовка данных для отправки (включая файлы)
       const marker_data = {
         label: this.label,
         radius_km: this.radius_m / 1000,
         latitude: this.latitude,
         longitude: this.longitude,
-        description: this.description
+        description: this.description,
+        files: this.files // Добавляем файлы в данные
       }
+      
       console.log(marker_data);
       const result = await this.createMarker(marker_data);
       if (result) {

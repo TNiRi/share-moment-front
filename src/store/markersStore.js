@@ -16,13 +16,26 @@ export const useMarkersStore = defineStore('MarkersStore', {
         setUserCoords(latitude, longitude) {
             this.userCoords = {latitude, longitude};
         },
-        async createMarker(marker_data) {
+        async createMarker(markerData) {
             const user_store = useUserStore();
             const token = user_store.token;
             if (!token) {
                 return false;
             }
-            const result = await create_marker(token, marker_data);
+            const formData = new FormData();
+            formData.append('label', markerData.label);
+            formData.append('radius_km', markerData.radius_km);
+            formData.append('latitude', markerData.latitude);
+            formData.append('longitude', markerData.longitude);
+            formData.append('description', markerData.description);
+            
+            // Добавляем файлы в FormData
+            if (markerData.files && markerData.files.length) {
+                for (let i = 0; i < markerData.files.length; i++) {
+                    formData.append(`photo[${i}]`, markerData.files[i]);
+                }
+            }
+            const result = await create_marker(token, formData);
             return result;
         },
         async getMyMarkers(){

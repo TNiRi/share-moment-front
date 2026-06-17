@@ -10,11 +10,18 @@
 import { mapState } from 'pinia';
 import { useUserStore } from '@/store/userStore';
 export default {
-computed: {
-    ...mapState(useUserStore, {
-        user_data: 'user_data'
-    })
-}
+    computed: {
+        ...mapState(useUserStore, {
+            user_data: 'user_data'
+        })
+    },
+    mounted() {
+        if(this.user_data === null){
+            this.$router.push({
+                name: 'signin'
+            })
+        }
+    }
 }
 </script>
 <style>
